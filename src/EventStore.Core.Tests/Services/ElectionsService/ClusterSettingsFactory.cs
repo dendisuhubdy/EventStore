@@ -1,11 +1,13 @@
 using System;
 using System.Linq;
 using System.Net;
+using System.Security.Cryptography.X509Certificates;
 using EventStore.Common.Utils;
 using EventStore.Core.Authentication;
 using EventStore.Core.Authorization;
 using EventStore.Core.Cluster.Settings;
 using EventStore.Core.Services.Monitoring;
+using EventStore.Core.Tests.Services.Transport.Tcp;
 using EventStore.Core.TransactionLog.Chunks;
 using EventStore.Core.Util;
 
@@ -20,6 +22,9 @@ namespace EventStore.Core.Tests.Services.ElectionsService {
 				httpIntPort = tcpIntPort + 10,
 				httpExtPort = tcpIntPort + 11;
 
+			var certificate = ssl_connections.GetServerCertificate();
+			var trustedRootCertificate = ssl_connections.GetRootCertificate();
+
 			var vnode = new ClusterVNodeSettings(Guid.NewGuid(), 0,
 				GetLoopbackForPort(tcpIntPort), null,
 				GetLoopbackForPort(tcpExtPort), null,
@@ -29,9 +34,9 @@ namespace EventStore.Core.Tests.Services.ElectionsService {
 					GetLoopbackForPort(httpIntPort),
 					GetLoopbackForPort(httpExtPort),
 					null, null, 0, 0),
-				false, null, 1, false, "dns", new[] {GetLoopbackForPort(ManagerPort)},
+				false, certificate, new X509Certificate2Collection(trustedRootCertificate), 1, false, "dns", new[] {GetLoopbackForPort(ManagerPort)},
 				TFConsts.MinFlushDelayMs, 3, 2, 2, TimeSpan.FromSeconds(2),
-				TimeSpan.FromSeconds(2), true, false,TimeSpan.FromHours(1),
+				TimeSpan.FromSeconds(2), false, false,TimeSpan.FromHours(1),
 				StatsStorage.StreamAndFile, 0, new InternalAuthenticationProviderFactory(), new LegacyAuthorizationProviderFactory(), false, 30, true, true, true,
 				TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1),
 				TimeSpan.FromSeconds(10),

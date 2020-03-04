@@ -52,6 +52,7 @@ namespace EventStore.Core {
 
 		protected bool _enableTrustedAuth;
 		protected X509Certificate2 _certificate;
+		protected X509Certificate2Collection _trustedRootCerts;
 		protected int _workerThreads;
 
 		protected bool _discoverViaDns;
@@ -142,7 +143,6 @@ namespace EventStore.Core {
 
 		private bool _readOnlyReplica;
 		private bool _unsafeAllowSurplusNodes;
-		private Func<HttpMessageHandler> _createHttpMessageHandler;
 		private IAuthorizationProviderFactory _authorizationProviderFactory;
 
 		// ReSharper restore FieldCanBeMadeReadOnly.Local
@@ -698,6 +698,39 @@ namespace EventStore.Core {
 		}
 
 		/// <summary>
+		/// Restricts trust to the root certificates in the specified path
+		/// </summary>
+		/// <param name="trustedRootCertificatesPath">The path to the trusted root certificates</param>
+		/// <returns>A <see cref="VNodeBuilder"/> with the options set</returns>
+		public VNodeBuilder WithTrustedRootCertificatesPath(
+			string trustedRootCertificatesPath) {
+			Ensure.NotNullOrEmpty(trustedRootCertificatesPath, "trustedRootCertificatesPath");
+
+			var certCollection = new X509Certificate2Collection();
+			var files = Directory.GetFiles(trustedRootCertificatesPath);
+			var acceptedExtensions = new[] { ".crt", ".cert", ".cer", ".pem", ".der" };
+			foreach (var file in files) {
+				var fileInfo = new FileInfo(file);
+				var extension = fileInfo.Extension;
+				if (acceptedExtensions.Contains(extension)) {
+					try {
+						var cert = new X509Certificate2(File.ReadAllBytes(file));
+						certCollection.Add(cert);
+						_log.Information("Trusted root certificate file loaded: {file}", fileInfo.Name);
+					} catch (Exception exc) {
+						throw new AggregateException($"Error loading trusted root certificate file: {file}", exc);
+					}
+				}
+			}
+
+			if(certCollection.Count == 0)
+				throw new Exception($"No trusted root certificates were loaded from: {trustedRootCertificatesPath}");
+
+			_trustedRootCerts = certCollection;
+			return this;
+		}
+
+		/// <summary>
 		/// Sets the heartbeat interval for the internal network interface.
 		/// </summary>
 		/// <param name="heartbeatInterval">The heartbeat interval</param>
@@ -1244,17 +1277,6 @@ namespace EventStore.Core {
 			return this;
 		}
 
-		/// <summary>
-		/// Determines the factory used to create the <see cref="HttpMessageHandler"/> used by internal http communications. Used for testing.
-		/// </summary>
-		/// <param name="createHttpMessageHandler">the <see cref="HttpMessageHandler"/> factory.</param>
-		/// <returns></returns>
-		public VNodeBuilder WithHttpMessageHandlerFactory(Func<HttpMessageHandler> createHttpMessageHandler) {
-			_createHttpMessageHandler = createHttpMessageHandler;
-
-			return this;
-		}
-
 		private GossipAdvertiseInfo EnsureGossipAdvertiseInfo() {
 			if (_gossipAdvertiseInfo == null) {
 				Ensure.Equal(false, _internalTcp == null && _internalSecureTcp == null, "Both internal TCP endpoints are null");
@@ -1367,6 +1389,7 @@ namespace EventStore.Core {
 				_gossipAdvertiseInfo,
 				_enableTrustedAuth,
 				_certificate,
+				_trustedRootCerts,
 				_workerThreads,
 				_discoverViaDns,
 				_clusterDns,
@@ -1426,7 +1449,6 @@ namespace EventStore.Core {
 				_logFailedAuthenticationAttempts,
 				_readOnlyReplica,
 				_maxAppendSize,
-				_createHttpMessageHandler,
 				_unsafeAllowSurplusNodes,
 				_enableExternalTCP,
 				_enableAtomPubOverHTTP);
