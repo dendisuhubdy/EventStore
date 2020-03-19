@@ -30,7 +30,8 @@ namespace EventStore.Core.Tests.Services.UserManagementService {
 				AllWritesSucceed();
 
 				_users = new Core.Services.UserManagement.UserManagementService(
-					_bus, _ioDispatcher, new StubPasswordHashAlgorithm(), skipInitializeStandardUsersCheck: true);
+					_bus, _ioDispatcher, new StubPasswordHashAlgorithm(), skipInitializeStandardUsersCheck: true,
+					() => { });
 
 				_bus.Subscribe<UserManagementMessage.Get>(_users);
 				_bus.Subscribe<UserManagementMessage.GetAll>(_users);

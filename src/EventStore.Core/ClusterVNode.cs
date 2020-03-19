@@ -338,14 +338,16 @@ namespace EventStore.Core {
 			_mainBus.Subscribe<SystemMessage.BecomeShuttingDown>(storageChaser);
 
 			// AUTHENTICATION INFRASTRUCTURE - delegate to plugins
+			Action onAuthStarted = () => _mainQueue.Publish(
+				new UserManagementMessage.UserManagementServiceInitialized());
 			if (vNodeSettings.AuthenticationProviderFactory is null) {
 				_internalAuthenticationProvider = new InternalAuthenticationProviderFactory
 					(_mainQueue, _mainBus, _workersHandler, _workerBuses)
-					.BuildAuthenticationProvider(vNodeSettings.LogFailedAuthenticationAttempts);
+					.BuildAuthenticationProvider(vNodeSettings.LogFailedAuthenticationAttempts, onAuthStarted);
 			} else {
 				_internalAuthenticationProvider =
-					vNodeSettings.AuthenticationProviderFactory.BuildAuthenticationProvider(vNodeSettings
-						.LogFailedAuthenticationAttempts);
+					vNodeSettings.AuthenticationProviderFactory.BuildAuthenticationProvider(
+						vNodeSettings.LogFailedAuthenticationAttempts, onAuthStarted);
 			}
 
 			Ensure.NotNull(_internalAuthenticationProvider, "authenticationProvider");
@@ -474,8 +476,8 @@ namespace EventStore.Core {
 			_mainBus.Subscribe<SystemMessage.BecomeShuttingDown>(_externalHttpService);
 
 			// Authentication plugin HTTP
-			vNodeSettings.AuthenticationProviderFactory.RegisterHttpControllers(_externalHttpService, httpSendService,
-				_mainQueue, _workersHandler);
+			// vNodeSettings.AuthenticationProviderFactory.RegisterHttpControllers(_externalHttpService, httpSendService,
+			// 	_mainQueue, _workersHandler);
 
 			SubscribeWorkers(KestrelHttpService.CreateAndSubscribePipeline);
 

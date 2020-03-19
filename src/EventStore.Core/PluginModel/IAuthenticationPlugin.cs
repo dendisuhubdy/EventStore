@@ -1,4 +1,5 @@
-﻿using EventStore.Core.Authentication;
+﻿using System.Threading.Tasks;
+using EventStore.Core.Authentication;
 
 namespace EventStore.Core.PluginModel {
 	public interface IAuthenticationPlugin {

@@ -1,4 +1,5 @@
-﻿using EventStore.Core.Bus;
+﻿using System;
+using EventStore.Core.Bus;
 using EventStore.Core.Helpers;
 using EventStore.Core.Messages;
 using EventStore.Core.Messaging;
@@ -23,7 +24,7 @@ namespace EventStore.Core.Authentication {
 			_workersQueue = workersQueue;
 			_workerBuses = workerBuses;
 		}
-		public IAuthenticationProvider BuildAuthenticationProvider(bool logFailedAuthenticationAttempts) {
+		public IAuthenticationProvider BuildAuthenticationProvider(bool logFailedAuthenticationAttempts, Action onStarted) {
 			var passwordHashAlgorithm = new Rfc2898PasswordHashAlgorithm();
 			var dispatcher = new IODispatcher(_mainQueue, new PublishEnvelope(_workersQueue, crossThread: true));
 
@@ -46,7 +47,7 @@ namespace EventStore.Core.Authentication {
 			_mainBus.Subscribe(ioDispatcher);
 
 			var userManagement = new UserManagementService(_mainQueue, ioDispatcher, passwordHashAlgorithm,
-				skipInitializeStandardUsersCheck: false);
+				skipInitializeStandardUsersCheck: false, onStarted);
 			_mainBus.Subscribe<UserManagementMessage.Create>(userManagement);
 			_mainBus.Subscribe<UserManagementMessage.Update>(userManagement);
 			_mainBus.Subscribe<UserManagementMessage.Enable>(userManagement);

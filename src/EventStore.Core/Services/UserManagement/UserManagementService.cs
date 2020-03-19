@@ -33,15 +33,17 @@ namespace EventStore.Core.Services.UserManagement {
 		private readonly bool _skipInitializeStandardUsersCheck;
 		private int _numberOfStandardUsersToBeCreated = 2;
 		private readonly ILogger _log;
+		private readonly Action _onStarted;
 
 		public UserManagementService(
 			IPublisher publisher, IODispatcher ioDispatcher, PasswordHashAlgorithm passwordHashAlgorithm,
-			bool skipInitializeStandardUsersCheck) {
+			bool skipInitializeStandardUsersCheck, Action onStarted) {
 			_log = Serilog.Log.ForContext<UserManagementService>();
 			_publisher = publisher;
 			_ioDispatcher = ioDispatcher;
 			_passwordHashAlgorithm = passwordHashAlgorithm;
 			_skipInitializeStandardUsersCheck = skipInitializeStandardUsersCheck;
+			_onStarted = onStarted;
 		}
 
 		private bool VerifyPassword(string password, UserData userDetailsToVerify) {
@@ -203,18 +205,21 @@ namespace EventStore.Core.Services.UserManagement {
 							NotifyInitialized();
 					});
 			} else {
-				_publisher.Publish(new UserManagementMessage.UserManagementServiceInitialized());
+				_onStarted();
+				// _publisher.Publish(new UserManagementMessage.UserManagementServiceInitialized());
 			}
 		}
 
 		public void Handle(SystemMessage.BecomeFollower message) {
-			_publisher.Publish(new UserManagementMessage.UserManagementServiceInitialized());
+			_onStarted();
+			// _publisher.Publish(new UserManagementMessage.UserManagementServiceInitialized());
 		}
 
 		private void NotifyInitialized() {
 			_numberOfStandardUsersToBeCreated -= 1;
 			if (_numberOfStandardUsersToBeCreated == 0) {
-				_publisher.Publish(new UserManagementMessage.UserManagementServiceInitialized());
+				_onStarted();
+				// _publisher.Publish(new UserManagementMessage.UserManagementServiceInitialized());
 			}
 		}
 
