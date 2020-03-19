@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+﻿using System;
+using System.Security.Claims;
 
 namespace EventStore.Core.Authentication {
 	public abstract class AuthenticationRequest {

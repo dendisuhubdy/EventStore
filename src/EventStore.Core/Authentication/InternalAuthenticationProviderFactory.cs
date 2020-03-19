@@ -3,10 +3,7 @@ using EventStore.Core.Bus;
 using EventStore.Core.Helpers;
 using EventStore.Core.Messages;
 using EventStore.Core.Messaging;
-using EventStore.Core.Services;
-using EventStore.Core.Services.Transport.Http;
 using EventStore.Core.Services.Transport.Http.Authentication;
-using EventStore.Core.Services.Transport.Http.Controllers;
 using EventStore.Core.Services.UserManagement;
 using EventStore.Core.Settings;
 
@@ -68,12 +65,6 @@ namespace EventStore.Core.Authentication {
 			_mainBus.Subscribe<SystemMessage.BecomeShutdown>(passwordChangeNotificationReader);
 			_mainBus.Subscribe(provider);
 			return provider;
-		}
-
-		public void RegisterHttpControllers(IHttpService externalHttpService, HttpSendService httpSendService,
-			IPublisher mainQueue, IPublisher networkSendQueue) {
-			var usersController = new UsersController(httpSendService, mainQueue, networkSendQueue);
-			externalHttpService.SetupController(usersController);
 		}
 	}
 }

@@ -1,5 +1,4 @@
-﻿
-namespace EventStore.Core.Authentication {
+﻿namespace EventStore.Core.Authentication {
 	public interface IAuthenticationProvider {
 		void Authenticate(AuthenticationRequest authenticationRequest);
 	}

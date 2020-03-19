@@ -1,4 +1,5 @@
 using System;
+using EventStore.Core.Authentication;
 using EventStore.Core.Bus;
 using EventStore.Core.Messages;
 using EventStore.Core.Authorization;

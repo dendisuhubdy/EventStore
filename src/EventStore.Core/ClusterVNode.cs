@@ -472,12 +472,14 @@ namespace EventStore.Core {
 				_externalHttpService.SetupController(gossipController);
 			_externalHttpService.SetupController(histogramController);
 
+			if (_internalAuthenticationProvider is InternalAuthenticationProvider) {
+				var usersController =
+					new UsersController(httpSendService, _mainQueue, _workersHandler);
+				_externalHttpService.SetupController(usersController);
+			}
+
 			_mainBus.Subscribe<SystemMessage.SystemInit>(_externalHttpService);
 			_mainBus.Subscribe<SystemMessage.BecomeShuttingDown>(_externalHttpService);
-
-			// Authentication plugin HTTP
-			// vNodeSettings.AuthenticationProviderFactory.RegisterHttpControllers(_externalHttpService, httpSendService,
-			// 	_mainQueue, _workersHandler);
 
 			SubscribeWorkers(KestrelHttpService.CreateAndSubscribePipeline);
 
