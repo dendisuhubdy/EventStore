@@ -205,7 +205,7 @@ namespace EventStore.Core.Tests.Helpers {
 					}));
 			}
 			Node.MainBus.Subscribe(
-				new AdHocHandler<UserManagementMessage.UserManagementServiceInitialized>(m => {
+				new AdHocHandler<AuthenticationMessage.AuthenticationProviderInitialized>(m => {
 					_adminUserCreated.TrySetResult(true);
 				}));
 			_host.Start();

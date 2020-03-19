@@ -19,7 +19,6 @@ namespace EventStore.Core.Tests.Common.VNodeBuilderTests.when_building {
 		public void should_create_single_cluster_node() {
 			Assert.IsNotNull(_node);
 			Assert.AreEqual(1, _settings.ClusterNodeCount, "ClusterNodeCount");
-			Assert.IsInstanceOf<InternalAuthenticationProviderFactory>(_settings.AuthenticationProviderFactory);
 			Assert.AreEqual(StatsStorage.Stream, _settings.StatsStorage);
 		}
 
@@ -89,7 +88,6 @@ namespace EventStore.Core.Tests.Common.VNodeBuilderTests.when_building {
 		public void should_create_single_cluster_node() {
 			Assert.IsNotNull(_node);
 			Assert.AreEqual(_clusterSize, _settings.ClusterNodeCount, "ClusterNodeCount");
-			Assert.IsInstanceOf<InternalAuthenticationProviderFactory>(_settings.AuthenticationProviderFactory);
 			Assert.AreEqual(StatsStorage.Stream, _settings.StatsStorage);
 		}
 

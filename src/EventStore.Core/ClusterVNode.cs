@@ -37,10 +37,8 @@ using EventStore.Core.Services.PersistentSubscription;
 using EventStore.Core.Services.Histograms;
 using EventStore.Core.Services.PersistentSubscription.ConsumerStrategy;
 using System.Threading.Tasks;
-using EventStore.Common.Exceptions;
 using EventStore.Core.Authorization;
 using EventStore.Core.Cluster;
-using EventStore.Core.PluginModel;
 using Microsoft.AspNetCore.Hosting;
 using ILogger = Serilog.ILogger;
 using MidFunc = System.Func<
@@ -339,7 +337,7 @@ namespace EventStore.Core {
 
 			// AUTHENTICATION INFRASTRUCTURE - delegate to plugins
 			Action onAuthStarted = () => _mainQueue.Publish(
-				new UserManagementMessage.UserManagementServiceInitialized());
+				new AuthenticationMessage.AuthenticationProviderInitialized());
 			if (vNodeSettings.AuthenticationProviderFactory is null) {
 				_internalAuthenticationProvider = new InternalAuthenticationProviderFactory
 					(_mainQueue, _mainBus, _workersHandler, _workerBuses)

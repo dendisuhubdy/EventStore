@@ -206,20 +206,17 @@ namespace EventStore.Core.Services.UserManagement {
 					});
 			} else {
 				_onStarted();
-				// _publisher.Publish(new UserManagementMessage.UserManagementServiceInitialized());
 			}
 		}
 
 		public void Handle(SystemMessage.BecomeFollower message) {
 			_onStarted();
-			// _publisher.Publish(new UserManagementMessage.UserManagementServiceInitialized());
 		}
 
 		private void NotifyInitialized() {
 			_numberOfStandardUsersToBeCreated -= 1;
 			if (_numberOfStandardUsersToBeCreated == 0) {
 				_onStarted();
-				// _publisher.Publish(new UserManagementMessage.UserManagementServiceInitialized());
 			}
 		}
 
