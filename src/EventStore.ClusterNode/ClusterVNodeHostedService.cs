@@ -362,7 +362,7 @@ namespace EventStore.ClusterNode {
 				: options.AuthenticationConfig;
 			var plugInContainer = FindPlugins();
 			var authenticationProviderFactory =
-				GetAuthenticationProviderFactory(options.AuthenticationType, authenticationConfig, plugInContainer);
+				GetAuthenticationProviderPlugins(options.AuthenticationType, authenticationConfig, plugInContainer);
 			var consumerStrategyFactories = GetPlugInConsumerStrategyFactories(plugInContainer);
 			builder.WithAuthenticationProvider(authenticationProviderFactory);
 			var subsystemFactories = GetPlugInSubsystemFactories(plugInContainer);
@@ -395,13 +395,11 @@ namespace EventStore.ClusterNode {
 			return strategyFactories.ToArray();
 		}
 
-		private static IAuthenticationProviderFactory GetAuthenticationProviderFactory(string authenticationType,
-			string authenticationConfigFile, CompositionContainer plugInContainer) {
+		private static IAuthenticationProviderFactory GetAuthenticationProviderPlugins(string authenticationType, string authenticationConfigFile,
+			CompositionContainer plugInContainer) {
 			var potentialPlugins = plugInContainer.GetExports<IAuthenticationPlugin>();
 
-			var authenticationTypeToPlugin = new Dictionary<string, Func<IAuthenticationProviderFactory>> {
-				{"internal", () => new InternalAuthenticationProviderFactory()}
-			};
+			var authenticationTypeToPlugin = new Dictionary<string, Func<IAuthenticationProviderFactory>>();
 
 			foreach (var potentialPlugin in potentialPlugins) {
 				try {

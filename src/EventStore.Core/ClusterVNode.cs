@@ -37,8 +37,10 @@ using EventStore.Core.Services.PersistentSubscription;
 using EventStore.Core.Services.Histograms;
 using EventStore.Core.Services.PersistentSubscription.ConsumerStrategy;
 using System.Threading.Tasks;
+using EventStore.Common.Exceptions;
 using EventStore.Core.Authorization;
 using EventStore.Core.Cluster;
+using EventStore.Core.PluginModel;
 using Microsoft.AspNetCore.Hosting;
 using ILogger = Serilog.ILogger;
 using MidFunc = System.Func<
@@ -336,9 +338,15 @@ namespace EventStore.Core {
 			_mainBus.Subscribe<SystemMessage.BecomeShuttingDown>(storageChaser);
 
 			// AUTHENTICATION INFRASTRUCTURE - delegate to plugins
-			_internalAuthenticationProvider =
-				vNodeSettings.AuthenticationProviderFactory.BuildAuthenticationProvider(_mainQueue, _mainBus,
-					_workersHandler, _workerBuses, vNodeSettings.LogFailedAuthenticationAttempts);
+			if (vNodeSettings.AuthenticationProviderFactory is null) {
+				_internalAuthenticationProvider = new InternalAuthenticationProviderFactory
+					(_mainQueue, _mainBus, _workersHandler, _workerBuses)
+					.BuildAuthenticationProvider(vNodeSettings.LogFailedAuthenticationAttempts);
+			} else {
+				_internalAuthenticationProvider =
+					vNodeSettings.AuthenticationProviderFactory.BuildAuthenticationProvider(vNodeSettings
+						.LogFailedAuthenticationAttempts);
+			}
 
 			Ensure.NotNull(_internalAuthenticationProvider, "authenticationProvider");
 

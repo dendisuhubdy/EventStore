@@ -192,7 +192,6 @@ namespace EventStore.Core {
 
 			_statsPeriod = TimeSpan.FromSeconds(Opts.StatsPeriodDefault);
 
-			_authenticationProviderFactory = new InternalAuthenticationProviderFactory();
 			_disableFirstLevelHttpAuthorization = Opts.DisableFirstLevelHttpAuthorizationDefault;
 
 			_authorizationProviderFactory = new LegacyAuthorizationProviderFactory();
